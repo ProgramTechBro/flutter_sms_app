@@ -1,3 +1,4 @@
+import 'package:attendease/app/AppColors/AppConstants.dart';
 import 'package:attendease/app/AppColors/appColor.dart';
 import 'package:attendease/app/Utils/CustomDropDown.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,7 @@ import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../Utils/CustomDailog.dart';
 import '../controllers/home_controller.dart';
+import 'attendanceDetail.dart';
 
 class HomeView extends StatefulWidget {
   const HomeView({super.key});
@@ -100,7 +102,7 @@ class _HomeViewState extends State<HomeView> {
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.02),
-                  SmsRecipientDropdown(),
+                  ReusableDropdown(selectedOption: controller.selectedOption,isDropdownOpen: controller.isDropdownOpen,options: AppConstants.messageOptions,),
                   SizedBox(height: screenHeight * 0.05),
                   Center(
                     child: ElevatedButton(
@@ -130,6 +132,34 @@ class _HomeViewState extends State<HomeView> {
                     ),
                   ),
                   const Spacer(),
+                  Center(
+                    child: SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primaryColor,
+                          padding: EdgeInsets.symmetric(
+                            vertical: screenHeight * 0.015,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                        onPressed: () {
+                          Get.to(AttendanceDetail());
+                        },
+                        child: Text(
+                          'Compose Message',
+                          style: GoogleFonts.montserrat(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: screenWidth * 0.042,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SizedBox(height: screenHeight * 0.03),
                   Center(
                     child: SizedBox(
                       width: double.infinity,

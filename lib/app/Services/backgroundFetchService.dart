@@ -27,9 +27,15 @@ Future<void> initializeBackgroundFetch() async {
         (String taskId) async {
       print("[BackgroundFetch] Event received: $taskId");
 
+      // if (taskId == 'send_sms_task') {
+      //   await sendTestSms();
+      // }
       if (taskId == 'send_sms_task') {
         await sendTestSms();
+      } else if (taskId == 'compose_sms_task') {
+        await sendContactSms();
       }
+
 
       BackgroundFetch.finish(taskId);
     },
@@ -66,9 +72,15 @@ void backgroundFetchHeadlessTask(HeadlessTask task) async {
 
   print('[BackgroundFetch] 🟢 Headless task received: $taskId');
 
+  // if (taskId == 'send_sms_task') {
+  //   await sendTestSms();
+  // }
   if (taskId == 'send_sms_task') {
     await sendTestSms();
+  } else if (taskId == 'compose_sms_task') {
+    await sendContactSms();
   }
+
 
   BackgroundFetch.finish(taskId);
 }
@@ -268,7 +280,7 @@ Future<void> sendTestSms() async {
   await clearAttendanceDataFromPrefs();
   await prefs.setBool('sms_task_completed', true);
 }
-
+//////////////////////////////Attendance Functionality//////////////////////////////////////
 /// Save Attendance Map
 Future<void> saveAttendanceDataToPrefs({
   required Map<String, Map<String, String>> attendanceMap,
@@ -323,3 +335,160 @@ String getSmsMessage({required String name, required String status}) {
     return "Dear Guardian, your child $name is marked Present today.";
   }
 }
+//////////////////////////////Compose Message Functionality//////////////////////////////////////
+@pragma('vm:entry-point')
+Future<void> scheduleContactSmsTask({
+  required Map<String, Map<String, String>> contactMap,
+  required String message,
+  required String selectedOption,
+}) async {
+  await saveContactDataToPrefs(contactMap: contactMap, message: message,selectedOption: selectedOption);
+
+  bool scheduled = await BackgroundFetch.scheduleTask(
+    TaskConfig(
+      taskId: "compose_sms_task",
+      delay: 1000,
+      periodic: false,
+      enableHeadless: true,
+      stopOnTerminate: true,
+      requiresBatteryNotLow: false,
+      requiresCharging: false,
+      requiresStorageNotLow: false,
+      requiresDeviceIdle: false,
+      requiredNetworkType: NetworkType.NONE,
+      startOnBoot: true,
+      forceAlarmManager: true,
+    ),
+  );
+
+  print("📅 Contact SMS task scheduled: $scheduled");
+}
+/// Function to send composed SMS
+@pragma('vm:entry-point')
+@pragma('vm:entry-point')
+Future<void> sendContactSms() async {
+  final prefs = await SharedPreferences.getInstance();
+  SmsSender sender = SmsSender();
+
+  var status = await Permission.sms.status;
+  if (!status.isGranted) {
+    status = await Permission.sms.request();
+    if (!status.isGranted) {
+      print("❌ SMS permission denied during sendContactSms.");
+      await prefs.setBool('contact_sms_task_completed', true);
+      await prefs.setString('contact_sms_task_failure_reason', 'Service failed due to Permission denied');
+      return;
+    }
+  }
+
+  final contactMap = await loadContactDataFromPrefs();
+  final messageTemplate = prefs.getString('contact_message') ?? '';
+  final option = prefs.getString('selected_option') ?? '';
+
+  if (contactMap.isEmpty) {
+    print("⚠️ No contacts found in SharedPreferences.");
+    return;
+  }
+  if (messageTemplate.isEmpty) {
+    print("⚠️ No message template found in SharedPreferences.");
+    return;
+  }
+
+  for (var entry in contactMap.entries) {
+    String name = entry.key;
+    Map<String, String> dataMap = entry.value;
+    String phoneNumber = dataMap['phone'] ?? '';
+    if (phoneNumber.isEmpty) {
+      print("⚠️ Missing phone number for $name, skipping SMS.");
+      continue;
+    }
+
+    String personalizedMessage = getGeneralSmsMessage(name: name, selectedOption: option, customMessage: messageTemplate);
+
+    SmsMessage sms = SmsMessage(phoneNumber, personalizedMessage);
+    sms.onStateChanged.listen((state) {
+      if (state == SmsMessageState.Sent) {
+        print("✅ SMS sent to $phoneNumber.");
+      } else if (state == SmsMessageState.Fail) {
+        print("❌ SMS failed to send to $phoneNumber.");
+      }
+    });
+
+    sender.sendSms(sms);
+    print("📤 Sending SMS to $phoneNumber. Waiting 10 seconds...");
+    await Future.delayed(const Duration(seconds: 10));
+  }
+
+  await clearContactDataFromPrefs();
+  await prefs.setBool('contact_sms_task_completed', true);
+  print("✅ Completed sending all contact SMS.");
+}
+
+
+
+
+
+///Save Contact Map
+Future<void> saveContactDataToPrefs({
+  required Map<String, Map<String, String>> contactMap,
+  required String message,
+  required String selectedOption,
+}) async {
+  final prefs = await SharedPreferences.getInstance();
+
+  final contactJson = contactMap.map(
+        (name, dataMap) => MapEntry(name, jsonEncode(dataMap)),
+  );
+  await prefs.setStringList('contact_keys', contactJson.keys.toList());
+  await prefs.setStringList('contact_values', contactJson.values.toList());
+  await prefs.setString('contact_message', message);
+  await prefs.setString('selected_option', selectedOption);
+  print("Contact data and message saved to SharedPreferences.");
+}
+
+///Load Contact Map
+Future<Map<String, Map<String, String>>> loadContactDataFromPrefs() async {
+  final prefs = await SharedPreferences.getInstance();
+  final keys = prefs.getStringList('contact_keys') ?? [];
+  final values = prefs.getStringList('contact_values') ?? [];
+
+  Map<String, Map<String, String>> contactMap = {};
+  for (int i = 0; i < keys.length; i++) {
+    contactMap[keys[i]] = Map<String, String>.from(
+      jsonDecode(values[i]) as Map<String, dynamic>,
+    );
+  }
+
+  return contactMap;
+}
+
+///Clear Contact Map
+Future<void> clearContactDataFromPrefs() async {
+  final prefs = await SharedPreferences.getInstance();
+  await prefs.remove('contact_keys');
+  await prefs.remove('contact_values');
+  await prefs.remove('contact_message');
+  await prefs.remove('selected_option');
+  print(" Cleared contact data and message from SharedPreferences.");
+}
+
+///Get Sms Based on selection
+String getGeneralSmsMessage({
+  required String name,
+  required String selectedOption,
+  required String customMessage,
+}) {
+  String greeting;
+
+  if (selectedOption == 'Only Staff') {
+    greeting = "Dear Staff $name,";
+  } else if (selectedOption == 'Any Class') {
+    greeting = "Dear Student $name,";
+  } else if (selectedOption == 'All School') {
+    greeting = "Dear $name,";
+  } else {
+    greeting = "Dear $name,";
+  }
+  return "$greeting $customMessage";
+}
+
