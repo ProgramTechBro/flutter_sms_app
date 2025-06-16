@@ -102,7 +102,7 @@ class _HomeViewState extends State<HomeView> {
                     ),
                   ),
                   SizedBox(height: screenHeight * 0.02),
-                  ReusableDropdown(selectedOption: controller.selectedOption,isDropdownOpen: controller.isDropdownOpen,options: AppConstants.messageOptions,),
+                  ReusableDropdown(selectedOption: controller.selectedOption,isDropdownOpen: controller.isDropdownOpen,options: AppConstants.messageOptions, dropDownType: 'Sms',),
                   SizedBox(height: screenHeight * 0.05),
                   Center(
                     child: ElevatedButton(

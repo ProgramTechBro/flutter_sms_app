@@ -194,6 +194,8 @@ class _AttendanceDetailState extends State<AttendanceDetail> {
                         selectedOption: controller.composeSelectedOption,
                         isDropdownOpen: controller.isComposeDropdownOpen,
                         options: AppConstants.composeMessageOptions,
+                          controller: controller,
+                          dropDownType: 'Compose'
                       ),
                       if (controller.composeSelectedOption.value == 'Any Class') ...[
                         SizedBox(height: screenHeight * 0.02),

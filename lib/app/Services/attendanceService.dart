@@ -94,7 +94,7 @@ class AttendanceService {
     const String testDate = '2025-05-29';
     print('Testing with fixed date: $testDate');
 
-    final Dio dio = DioService().dio;
+    final dio = DioService.instance.dio;
     BotToast.showLoading();
 
     final Map<String, Map<String, String>> attendanceMap = {};

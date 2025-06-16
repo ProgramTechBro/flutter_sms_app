@@ -101,11 +101,16 @@ class HomeController extends GetxController {
   ///////////////////////Fetch Class Functionality//////////////////////////
   ///Fetch Classes
   Future<void> fetchClasses() async {
-    globalClassList = await classService.fetchClasses();
-    List<String> classNames = extractClassNames(globalClassList);
-    if (classNames.isNotEmpty) {
-      classOptions.value = classNames;
-      classSelectedOption.value = classNames.first;
+    if(classOptions.isEmpty){
+      globalClassList = await classService.fetchClasses();
+      List<String> classNames = extractClassNames(globalClassList);
+      if (classNames.isNotEmpty) {
+        classOptions.value = classNames;
+        classSelectedOption.value = classNames.first;
+      }
+      else{
+        Get.snackbar("Error", "Fetched Classes list is empty.");
+      }
     }
   }
   /// Helper Function
@@ -130,14 +135,14 @@ class HomeController extends GetxController {
   Future<void> composeMessage() async {
     Map<String, Map<String, String>> recipients = {};
     if (composeSelectedOption.value == 'All School') {
-      recipients = await composeService.fetchContacts(AppConstants.fetchAllSchoolUrl);
+      recipients = await composeService.fetchContacts(AppConstants.fetchAllSchoolEndPointUrl);
     } else if (composeSelectedOption.value == 'Only Staff') {
-      recipients = await composeService.fetchContacts(AppConstants.fetchStaffUrl);
+      recipients = await composeService.fetchContacts(AppConstants.fetchStaffEndPointUrl);
     } else if (composeSelectedOption.value == 'Any Class') {
       final selectedClass = getClassIdByName(classSelectedOption.value);
 
       if (selectedClass!=null) {
-        final url = AppConstants.fetchClassStudent + selectedClass.toString();
+        final url = AppConstants.fetchClassStudentEndPointUrl + selectedClass.toString();
         print('the url is $url');
         recipients = await composeService.fetchContacts(url);
       } else {

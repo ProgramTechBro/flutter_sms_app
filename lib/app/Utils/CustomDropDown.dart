@@ -617,11 +617,15 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../modules/home/controllers/home_controller.dart';
+
 class ReusableDropdown extends StatelessWidget {
   final RxString selectedOption;
   final RxBool isDropdownOpen;
   final List<String> options;
   final Color backgroundColor;
+  final HomeController? controller;
+  final String dropDownType;
   final Color textColor;
   final double? width;
   final double? height;
@@ -634,9 +638,11 @@ class ReusableDropdown extends StatelessWidget {
     required this.selectedOption,
     required this.isDropdownOpen,
     required this.options,
+    required this.dropDownType,
     this.backgroundColor = const Color(0xFF161b1d),
     this.textColor = Colors.white,
     this.width,
+    this.controller,
     this.height,
   }) : super(key: key);
 
@@ -653,7 +659,7 @@ class ReusableDropdown extends StatelessWidget {
             if (isDropdownOpen.value) {
               _removeOverlay();
             } else {
-              _showOverlay(context);
+              _showOverlay(context,controller);
             }
             isDropdownOpen.toggle();
           },
@@ -697,7 +703,7 @@ class ReusableDropdown extends StatelessWidget {
     });
   }
 
-  void _showOverlay(BuildContext context) {
+  void _showOverlay(BuildContext context,HomeController? controller) {
     final screenWidth = width ?? MediaQuery.of(context).size.width;
     final screenHeight = height ?? MediaQuery.of(context).size.height;
 
@@ -742,9 +748,21 @@ class ReusableDropdown extends StatelessWidget {
                         final option = options[index];
                         return InkWell(
                           onTap: () {
-                            selectedOption.value = option;
-                            _removeOverlay();
-                            isDropdownOpen.value = false;
+                            if(dropDownType=='Compose' && controller!=null){
+                              if(controller.classOptions.isEmpty){
+                                Get.snackbar('No classes','No classes available right now');
+                              }
+                              else{
+                                selectedOption.value = option;
+                                _removeOverlay();
+                                isDropdownOpen.value = false;
+                              }
+                            }
+                            else{
+                              selectedOption.value = option;
+                              _removeOverlay();
+                              isDropdownOpen.value = false;
+                            }
                           },
                           child: Container(
                             padding: EdgeInsets.symmetric(

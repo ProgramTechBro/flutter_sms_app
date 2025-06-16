@@ -1,4 +1,5 @@
 import 'package:attendease/Network/dioServices.dart';
+import 'package:attendease/app/Helper/AppInitialization.dart';
 import 'package:attendease/app/Services/backgroundFetchService.dart';
 import 'package:bot_toast/bot_toast.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +15,7 @@ void main() async {
     statusBarIconBrightness: Brightness.light,
   ));
   initializeBackgroundFetch();
-  DioService();
+  AppInitializer.initializeDioFromPrefs();
   runApp(const MyApp());
 }
 class MyApp extends StatelessWidget {

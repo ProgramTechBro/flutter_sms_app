@@ -10,7 +10,7 @@ import '../../Network/dioServices.dart';
 
 class ComposeMessageServices{
   Future<Map<String, Map<String, String>>> fetchContacts(String endpoint) async {
-    final Dio dio = DioService().dio;
+    final dio = DioService.instance.dio;
     BotToast.showLoading();
 
     final Map<String, Map<String, String>> contactMap = {};

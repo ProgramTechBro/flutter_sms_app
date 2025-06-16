@@ -53,14 +53,23 @@ class _LoginViewState extends State<LoginView> {
                     validator: (val) {
                       if (val == null || val.isEmpty) {
                         return "Email is required";
-                      } else if (!RegExp(
-                        r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                      ).hasMatch(val)) {
-                        return 'Enter a valid email address';
+                      } else if (!RegExp(r'^[\w-\.]+@[\w-]+\.com$').hasMatch(val)) {
+                        return 'Enter a valid .com email address';
                       } else {
                         return null;
                       }
                     },
+                    // validator: (val) {
+                    //   if (val == null || val.isEmpty) {
+                    //     return "Email is required";
+                    //   } else if (!RegExp(
+                    //     r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                    //   ).hasMatch(val)) {
+                    //     return 'Enter a valid email address';
+                    //   } else {
+                    //     return null;
+                    //   }
+                    // },
                   ),
                   SizedBox(height: screenHeight * 0.015),
                   CustomTextField(

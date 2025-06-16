@@ -11,9 +11,9 @@ import '../../Network/dioServices.dart';
 
 class ClassesService{
   Future<List<Map<String, dynamic>>> fetchClasses() async {
-    String url = AppConstants.fetchClassesUrl;
+    String url = AppConstants.fetchClassesEndPointUrl;
 
-    final Dio dio = DioService().dio;
+    final dio = DioService.instance.dio;
     BotToast.showLoading();
 
     final List<Map<String, dynamic>> classList = [];

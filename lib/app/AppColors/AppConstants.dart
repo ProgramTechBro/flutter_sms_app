@@ -1,8 +1,8 @@
 class AppConstants {
-  static const String fetchClassesUrl = 'https://sms.codecrushtech.com/api/classes';
-  static const String fetchAllSchoolUrl = 'https://sms.codecrushtech.com/api/all';
-  static const String fetchStaffUrl = 'https://sms.codecrushtech.com/api/staff';
-  static const String fetchClassStudent = 'https://sms.codecrushtech.com/api/students/';
+  static const String fetchClassesEndPointUrl = 'classes';
+  static const String fetchAllSchoolEndPointUrl = 'all';
+  static const String fetchStaffEndPointUrl = 'staff';
+  static const String fetchClassStudentEndPointUrl = 'students/';
   static const List<String> messageOptions = [
     "Send SMS to All",
     "Only Absents",
